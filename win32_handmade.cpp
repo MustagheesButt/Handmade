@@ -1,5 +1,6 @@
 #include <windows.h>
 #include <stdint.h>
+#include <stdio.h>
 #include <Xinput.h>
 #include <dsound.h>
 #include <math.h>
@@ -384,6 +385,10 @@ int CALLBACK WinMain(
     int nCmdShow
 )
 {
+    LARGE_INTEGER QueryPerfFreq;
+    QueryPerformanceFrequency(&QueryPerfFreq);
+    int64 PerfCountFreq = QueryPerfFreq.QuadPart;
+
     Win32LoadXInput();
 
     WNDCLASSA WindowClass = {};
@@ -437,6 +442,11 @@ int CALLBACK WinMain(
             SecondaryBuffer->Play(0, 0, DSBPLAY_LOOPING);
 
             Running = true;
+
+            LARGE_INTEGER LastCounter;
+            QueryPerformanceCounter(&LastCounter);
+
+            uint64 LastCycleCount = __rdtsc();
             while (Running)
             {
                 MSG Message;
@@ -512,6 +522,24 @@ int CALLBACK WinMain(
 
                 XOffset++;
                 // YOffset += 2;
+
+                uint64 EndCycleCount = __rdtsc();
+
+                LARGE_INTEGER EndCounter;
+                QueryPerformanceCounter(&EndCounter);
+
+                uint64 CyclesElapsed = EndCycleCount - LastCycleCount;
+                int64 CounterElapsed = EndCounter.QuadPart - LastCounter.QuadPart;
+                real32 MSPerFrame = (((1000.0f * (real32)CounterElapsed) / (real32)PerfCountFreq));
+                real32 FPS = (real32)PerfCountFreq / (real32)CounterElapsed;
+                real32 MCPF = (real32)(CyclesElapsed / (1000.0f * 1000.0f));
+
+                char Buffer[256];
+                sprintf(Buffer, "time/frame: %fms, %f FPS, %f Mc/f\n", MSPerFrame, FPS, MCPF);
+                OutputDebugStringA(Buffer);
+
+                LastCounter = EndCounter;
+                LastCycleCount = EndCycleCount;
             }
         }
         else
