@@ -25,6 +25,8 @@ typedef uint64_t uint64;
 typedef float real32;
 typedef double real64;
 
+#include "handmade.cpp"
+
 struct win32_offscreen_buffer
 {
     BITMAPINFO Info;
@@ -65,6 +67,8 @@ typedef DIRECT_SOUND_CREATE(direct_sound_create);
 global bool32 Running;
 global win32_offscreen_buffer BackBuffer;
 global LPDIRECTSOUNDBUFFER SecondaryBuffer;
+
+
 
 internal void Win32LoadXInput(void)
 {
@@ -178,24 +182,6 @@ internal win32_window_dimension Win32GetWindowDimension(HWND Window)
     x.Height = ClientRect.bottom - ClientRect.top;
 
     return x;
-}
-
-internal void RenderWeirdGradiant(win32_offscreen_buffer *Buffer, int XOffset, int YOffset)
-{
-    // TODO: What optimizer does with Buffer by pointer vs by value
-    uint8 *Row = (uint8 *)Buffer->Memory;
-    for (int Y = 0; Y < Buffer->Height; Y++)
-    {
-        uint32 *Pixel = (uint32 *)Row;
-        for (int X = 0; X < Buffer->Width; X++)
-        {
-            uint8 Blue = (X + XOffset);
-            uint8 Green = (Y + YOffset);
-
-            *Pixel++ = (Green << 8 | Blue);
-        }
-        Row += Buffer->Pitch;
-    }
 }
 
 internal void Win32ResizeDIBSection(win32_offscreen_buffer *Buffer, int Width, int Height)
@@ -494,7 +480,12 @@ int CALLBACK WinMain(
                     }
                 }
 
-                RenderWeirdGradiant(&BackBuffer, XOffset, YOffset);
+                game_offscreen_buffer Buffer = {};
+                Buffer.Memory = BackBuffer.Memory;
+                Buffer.Width = BackBuffer.Width;
+                Buffer.Height = BackBuffer.Height;
+                Buffer.Pitch = BackBuffer.Pitch;
+                GameUpdateAndRender(&Buffer);
 
                 // DirectSound test
                 DWORD PlayCursor;
@@ -520,9 +511,6 @@ int CALLBACK WinMain(
                 win32_window_dimension Dimension = Win32GetWindowDimension(Window);
                 Win32DisplayBufferInWindow(DeviceContext, Dimension.Width, Dimension.Height, &BackBuffer, 0, 0, Dimension.Width, Dimension.Height);
 
-                XOffset++;
-                // YOffset += 2;
-
                 uint64 EndCycleCount = __rdtsc();
 
                 LARGE_INTEGER EndCounter;
@@ -534,9 +522,11 @@ int CALLBACK WinMain(
                 real32 FPS = (real32)PerfCountFreq / (real32)CounterElapsed;
                 real32 MCPF = (real32)(CyclesElapsed / (1000.0f * 1000.0f));
 
+#if 0
                 char Buffer[256];
                 sprintf(Buffer, "time/frame: %fms, %f FPS, %f Mc/f\n", MSPerFrame, FPS, MCPF);
                 OutputDebugStringA(Buffer);
+#endif
 
                 LastCounter = EndCounter;
                 LastCycleCount = EndCycleCount;
