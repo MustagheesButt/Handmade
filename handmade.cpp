@@ -1,5 +1,23 @@
 #include "handmade.h"
 
+internal void GameSoundOutput(sound_output_buffer *SoundBuffer, int ToneHz)
+{
+    local_persist real32 tSine;
+    int16 ToneVolume = 3000;
+    int WavePeriod = SoundBuffer->SamplesPerSecond/ToneHz;
+
+    int16 *SampleOut = SoundBuffer->Samples;
+    for (int SampleIndex = 0; SampleIndex < SoundBuffer->SampleCount; ++SampleIndex)
+    {
+        real32 SineValue = sinf(tSine);
+        int16 SampleValue = (int16)(SineValue * ToneVolume);
+        *SampleOut++ = SampleValue;
+        *SampleOut++ = SampleValue;
+
+        tSine += 2.0f * PI32 * 1.0f/(real32)WavePeriod;
+    }
+}
+
 internal void RenderWeirdGradiant(game_offscreen_buffer *Buffer, int XOffset, int YOffset)
 {
     // TODO: What optimizer does with Buffer by pointer vs by value
@@ -18,7 +36,8 @@ internal void RenderWeirdGradiant(game_offscreen_buffer *Buffer, int XOffset, in
     }
 }
 
-internal void GameUpdateAndRender(game_offscreen_buffer *Buffer)
+internal void GameUpdateAndRender(game_offscreen_buffer *Buffer, sound_output_buffer *SoundBuffer, int ToneHz)
 {
+    GameSoundOutput(SoundBuffer, ToneHz);
     RenderWeirdGradiant(Buffer, 0, 0);
 }
