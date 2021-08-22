@@ -36,8 +36,29 @@ internal void RenderWeirdGradiant(game_offscreen_buffer *Buffer, int XOffset, in
     }
 }
 
-internal void GameUpdateAndRender(game_offscreen_buffer *Buffer, sound_output_buffer *SoundBuffer, int ToneHz)
+internal void GameUpdateAndRender(game_input *Input, game_offscreen_buffer *Buffer, sound_output_buffer *SoundBuffer)
 {
+    int ToneHz = 256;
+    int BlueOffset = 0;
+    int GreenOffset = 0;
+
+    game_controller_input *Input0 = &Input->Controllers[0];
+    if (Input0->IsAnalog)
+    {
+        // Use analog movement tuning
+        ToneHz = 256 + (int)(128.0f * Input0->EndX);
+        BlueOffset += (int)(4.0f * Input0->EndY);
+    }
+    else
+    {
+        // Use digital movement tuning
+    }
+
+    if (Input0->Down.EndedDown)
+    {
+        GreenOffset += 1;
+    }
+
     GameSoundOutput(SoundBuffer, ToneHz);
-    RenderWeirdGradiant(Buffer, 0, 0);
+    RenderWeirdGradiant(Buffer, BlueOffset, GreenOffset);
 }
