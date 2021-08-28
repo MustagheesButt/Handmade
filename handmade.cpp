@@ -44,6 +44,15 @@ internal void GameUpdateAndRender(game_memory *Memory, game_input *Input, game_o
 
     if (!Memory->IsInitialized)
     {
+        char *Filename = __FILE__;
+
+        debug_read_file_result File = DEBUGPlatformReadEntireFile(Filename);
+        if (File.Contents)
+        {
+            DEBUGPlatformWriteEntireFile("h:/out.txt", File.ContentsSize, File.Contents);
+            DEBUGPlatformFreeFileMemory(File.Contents);
+        }
+
         State->ToneHz = 256;
         Memory->IsInitialized = true;
     }
@@ -53,7 +62,7 @@ internal void GameUpdateAndRender(game_memory *Memory, game_input *Input, game_o
     {
         // Use analog movement tuning
         State->ToneHz = 256 + (int)(128.0f * Input0->EndX);
-        State->BlueOffset += (int)(4.0f * Input0->EndY);
+        State->GreenOffset += (int)(4.0f * Input0->EndY);
     }
     else
     {

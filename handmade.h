@@ -22,6 +22,28 @@
 #define Terabytes(Value) (Gigabytes(Value) * 1024LL)
 
 #define ArrayCount(Array) (sizeof(Array) / sizeof((Array)[0]))
+
+inline uint32 SafeTruncateUInt64(uint64 Value)
+{
+    Assert(Value <= 0xFFFFFFFF);
+    return (uint32)Value;
+}
+
+/*
+ * Services that the platform layer provides to the game
+ */
+#if HANDMADE_INTERNAL
+struct debug_read_file_result
+{
+    uint32 ContentsSize;
+    void *Contents;
+};
+internal debug_read_file_result DEBUGPlatformReadEntireFile(char *Filename);
+void DEBUGPlatformFreeFileMemory(void *Memory);
+
+bool32 DEBUGPlatformWriteEntireFile(char *Filename, uint32 MemorySize, void *Memory);
+#endif
+
 /*
  * Services that the game provides to platform layer
  */

@@ -54,7 +54,86 @@ global bool32 Running;
 global win32_offscreen_buffer BackBuffer;
 global LPDIRECTSOUNDBUFFER SecondaryBuffer;
 
+internal debug_read_file_result DEBUGPlatformReadEntireFile(char *Filename)
+{
+    debug_read_file_result Result = {};
 
+    HANDLE FileHandle = CreateFileA(Filename, GENERIC_READ, FILE_SHARE_READ, 0, OPEN_EXISTING, 0, 0);
+    if (FileHandle != INVALID_HANDLE_VALUE)
+    {
+        LARGE_INTEGER FileSize;
+        if (GetFileSizeEx(FileHandle, &FileSize))
+        {
+            uint32 FileSize32 = SafeTruncateUInt64(FileSize.QuadPart);
+            Result.Contents = VirtualAlloc(0 , FileSize32, MEM_RESERVE|MEM_COMMIT, PAGE_READWRITE);
+            if (Result.Contents)
+            {
+                DWORD BytesRead;
+                if (ReadFile(FileHandle, Result.Contents, FileSize32, &BytesRead, 0) && BytesRead == FileSize32)
+                {
+                    Result.ContentsSize = FileSize32;
+                }
+                else
+                {
+                    // TODO: Logging
+                    DEBUGPlatformFreeFileMemory(Result.Contents);
+                    Result.Contents = 0;
+                }
+            }
+            else
+            {
+                // TODO: Logging
+            }
+        }
+        else
+        {
+            // TODO: Logging
+        }
+
+        CloseHandle(FileHandle);
+    }
+    else
+    {
+        // TODO: Logging
+    }
+
+    return Result;
+}
+
+internal void DEBUGPlatformFreeFileMemory(void *Memory)
+{
+    if (Memory)
+    {
+        VirtualFree(Memory, 0, MEM_RELEASE);
+    }
+}
+
+internal bool32 DEBUGPlatformWriteEntireFile(char *Filename, uint32 MemorySize, void *Memory)
+{
+    bool32 Result = false;
+
+    HANDLE FileHandle = CreateFileA(Filename, GENERIC_WRITE, 0, 0, CREATE_ALWAYS, 0, 0);
+    if (FileHandle != INVALID_HANDLE_VALUE)
+    {
+        DWORD BytesWritten;
+        if (WriteFile(FileHandle, Memory, MemorySize, &BytesWritten, 0))
+        {
+            Result = (BytesWritten == MemorySize);
+        }
+        else
+        {
+            // TODO: Logging
+        }
+
+        CloseHandle(FileHandle);
+    }
+    else
+    {
+        // TODO: Logging
+    }
+
+    return Result;
+}
 
 internal void Win32LoadXInput(void)
 {
@@ -406,9 +485,6 @@ int CALLBACK WinMain(
             // Since we specified CS_OWNDC, we can just get one device context and use it forever
             // because we are not sharing it with anyone
             HDC DeviceContext = GetDC(Window);
-
-            int XOffset = 0;
-            int YOffset = 0;
 
             win32_sound_output SoundOutput = {};
 
