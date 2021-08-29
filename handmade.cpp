@@ -14,7 +14,7 @@ internal void GameSoundOutput(sound_output_buffer *SoundBuffer, int ToneHz)
         *SampleOut++ = SampleValue;
         *SampleOut++ = SampleValue;
 
-        tSine += 2.0f * PI32 * 1.0f/(real32)WavePeriod;
+        tSine += (real32)(2.0f * PI32 * 1.0f/(real32)WavePeriod);
     }
 }
 
@@ -27,8 +27,8 @@ internal void RenderWeirdGradiant(game_offscreen_buffer *Buffer, int XOffset, in
         uint32 *Pixel = (uint32 *)Row;
         for (int X = 0; X < Buffer->Width; X++)
         {
-            uint8 Blue = (X + XOffset);
-            uint8 Green = (Y + YOffset);
+            uint8 Blue = (uint8)(X + XOffset);
+            uint8 Green = (uint8)(Y + YOffset);
 
             *Pixel++ = (Green << 8 | Blue);
         }

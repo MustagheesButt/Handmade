@@ -2,5 +2,5 @@
 
 mkdir build
 pushd build
-cl -DHANDMADE_INTERNAL=1 -DHANDMADE_SLOW=1 -FC -Zi h:\win32_handmade.cpp user32.lib gdi32.lib
+cl -MT -Gm- -nologo -GR- -EHa -Oi -WX -W4 -wd4201 -wd4100 -wd4189 -DHANDMADE_INTERNAL=1 -DHANDMADE_SLOW=1 -FC -Z7 -Fm h:\win32_handmade.cpp /link -opt:ref -subsystem:windows,5.1 user32.lib gdi32.lib
 popd

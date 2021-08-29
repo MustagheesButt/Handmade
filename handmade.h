@@ -39,9 +39,9 @@ struct debug_read_file_result
     void *Contents;
 };
 internal debug_read_file_result DEBUGPlatformReadEntireFile(char *Filename);
-void DEBUGPlatformFreeFileMemory(void *Memory);
+internal void DEBUGPlatformFreeFileMemory(void *Memory);
 
-bool32 DEBUGPlatformWriteEntireFile(char *Filename, uint32 MemorySize, void *Memory);
+internal bool32 DEBUGPlatformWriteEntireFile(char *Filename, uint32 MemorySize, void *Memory);
 #endif
 
 /*
